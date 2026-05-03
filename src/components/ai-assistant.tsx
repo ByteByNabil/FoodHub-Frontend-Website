@@ -160,9 +160,9 @@ export function AiAssistant() {
                 </div>
               </CardHeader>
 
-              <CardContent className="flex-1 p-0 bg-background/40 backdrop-blur-md">
+              <CardContent className="flex-1 overflow-hidden p-0 bg-background/40 backdrop-blur-md">
                 <ScrollArea className="h-full px-4 py-5">
-                  <div className="flex flex-col gap-4 min-h-[400px]">
+                  <div className="flex flex-col gap-4 min-h-full">
                     <AnimatePresence initial={false}>
                       {messages.map((msg, idx) => (
                         <motion.div
