@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CheckCircle, Package, ArrowRight, Home, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCart } from "@/contexts/cart-context";
 
 const CONFETTI_COLORS = [
   "#f87171",
@@ -26,8 +27,14 @@ type ConfettiPiece = {
 export default function PaymentSuccessPage() {
   const [confetti, setConfetti] = useState(false);
   const [pieces, setPieces] = useState<ConfettiPiece[]>([]);
+  const { clearCart } = useCart();
 
   useEffect(() => {
+    // Clear cart immediately from localStorage (bypasses hydration timing)
+    localStorage.removeItem("foodhub_cart");
+    // Also clear the in-memory cart state
+    clearCart();
+
     const generatedPieces = Array.from({ length: 50 }, (_, index) => ({
       id: index,
       left: `${Math.random() * 100}%`,

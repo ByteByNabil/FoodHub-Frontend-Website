@@ -35,7 +35,9 @@ export function MealCard({ meal }: MealCardProps) {
 
     // Warn if adding from different provider
     if (providerId && providerId !== meal.providerId) {
-      toast.warning("Cart cleared! You can only order from one restaurant at a time.");
+      toast.warning(
+        "Cart cleared! You can only order from one restaurant at a time.",
+      );
     }
 
     addToCart(meal);
@@ -43,12 +45,9 @@ export function MealCard({ meal }: MealCardProps) {
   };
 
   return (
-    <Link href={`/meals/${meal.id}`}>
-      <motion.div
-        whileHover={{ y: -4 }}
-        transition={{ duration: 0.2 }}
-      >
-        <Card className="group h-full overflow-hidden border-0 shadow-md hover:shadow-xl transition-shadow duration-300">
+    <div className="h-full cursor-pointer">
+      <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2 }} className="h-full">
+        <Card className="group h-full flex flex-col overflow-hidden border-0 shadow-md hover:shadow-xl transition-shadow duration-300 rounded-2xl">
           <div className="relative aspect-[4/3] overflow-hidden bg-muted">
             <img
               src={
@@ -58,10 +57,10 @@ export function MealCard({ meal }: MealCardProps) {
               alt={meal.title}
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
             />
-            
+
             {/* Overlay gradient */}
-            <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            
+            <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
             {/* Top badges */}
             <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
               {meal.category && (
@@ -69,14 +68,17 @@ export function MealCard({ meal }: MealCardProps) {
                   {meal.category.name}
                 </Badge>
               )}
-              <button 
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-background/90 text-muted-foreground backdrop-blur-sm shadow-md transition-colors hover:text-primary hover:bg-background"
               >
                 <Heart className="h-4 w-4" />
               </button>
             </div>
-            
+
             {/* Unavailable overlay */}
             {!meal.isAvailable && (
               <div className="absolute inset-0 flex items-center justify-center bg-foreground/70 backdrop-blur-sm">
@@ -85,22 +87,9 @@ export function MealCard({ meal }: MealCardProps) {
                 </Badge>
               </div>
             )}
-            
-            {/* Quick add button - shows on hover */}
-            {meal.isAvailable && (
-              <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <Button
-                  onClick={handleAddToCart}
-                  className="w-full h-11 shadow-lg"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add to Cart
-                </Button>
-              </div>
-            )}
           </div>
-          
-          <CardContent className="p-5">
+
+          <CardContent className="p-5 flex flex-col flex-1">
             {/* Restaurant info */}
             {meal.provider && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
@@ -110,43 +99,61 @@ export function MealCard({ meal }: MealCardProps) {
                 </span>
               </div>
             )}
-            
+
             {/* Title */}
             <h3 className="mb-2 line-clamp-1 text-lg font-semibold group-hover:text-primary transition-colors">
               {meal.title}
             </h3>
-            
+
             {/* Description */}
             {meal.description && (
-              <p className="mb-4 line-clamp-2 text-sm text-muted-foreground leading-relaxed">
+              <p className="mb-4 line-clamp-2 text-sm text-muted-foreground leading-relaxed flex-1">
                 {meal.description}
               </p>
             )}
-            
-            {/* Bottom section */}
-            <div className="flex items-center justify-between pt-2 border-t border-border">
-              {/* Rating and time */}
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                  <span className="text-sm font-medium">4.5</span>
+
+            {/* Bottom section (Meta Info & Buttons) */}
+            <div className="mt-auto pt-4 border-t border-border flex flex-col gap-3">
+              <div className="flex items-center justify-between text-sm">
+                {/* Meta info */}
+                <div className="flex items-center gap-3 text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    <span className="font-medium text-foreground">4.5</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span>25 min</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <Clock className="h-3.5 w-3.5" />
-                  <span className="text-xs">15-25 min</span>
-                </div>
-              </div>
-              
-              {/* Price */}
-              <div className="text-right">
-                <span className="text-xl font-bold text-primary">
+                {/* Price */}
+                <span className="text-lg font-bold text-primary">
                   ${meal.price.toFixed(2)}
                 </span>
+              </div>
+              
+              {/* Actions */}
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1 font-semibold" asChild>
+                  <Link href={`/meals/${meal.id}`}>
+                    View Details
+                  </Link>
+                </Button>
+                {meal.isAvailable && (
+                  <Button 
+                    onClick={handleAddToCart}
+                    size="icon"
+                    className="shrink-0"
+                    title="Add to Cart"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>
         </Card>
       </motion.div>
-    </Link>
+    </div>
   );
 }

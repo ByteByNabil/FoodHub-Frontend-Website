@@ -63,9 +63,17 @@ export default function ProviderDetailPage({ params }: ProviderPageProps) {
       {/* Provider Header */}
       <div className="mb-8 overflow-hidden rounded-lg border bg-card">
         <div className="relative aspect-[3/1] bg-muted">
-          <div className="flex h-full items-center justify-center">
-            <Store className="h-24 w-24 text-muted-foreground/30" />
-          </div>
+          {provider.image ? (
+            <img
+              src={provider.image}
+              alt={provider.restaurantName}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <Store className="h-24 w-24 text-muted-foreground/30" />
+            </div>
+          )}
         </div>
         <div className="p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">

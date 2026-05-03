@@ -8,6 +8,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth } from "@/contexts/auth-context";
 import { api } from "@/lib/api";
 import type { Order } from "@/lib/types";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+} from "recharts";
 
 export default function ProviderDashboardPage() {
   const { isAuthenticated, isProvider, user } = useAuth();
@@ -34,26 +45,6 @@ export default function ProviderDashboardPage() {
   const meals = mealsData?.data || [];
   const orders: Order[] = ordersData?.data || [];
 
-  if (!isAuthenticated || !isProvider) {
-    return (
-      <div className="container mx-auto flex min-h-[calc(100vh-200px)] items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-muted-foreground">
-              This page is only accessible to restaurant providers
-            </p>
-            <Button asChild>
-              <Link href="/login">Sign In</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   if (providerLoading) {
     return (
       <div className="flex h-96 items-center justify-center">
@@ -65,8 +56,8 @@ export default function ProviderDashboardPage() {
   // No provider profile yet
   if (!provider) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Card className="mx-auto max-w-lg text-center">
+      <div>
+        <Card className="mx-auto max-w-lg text-center mt-12">
           <CardHeader>
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100">
               <AlertCircle className="h-8 w-8 text-yellow-600" />
@@ -89,8 +80,8 @@ export default function ProviderDashboardPage() {
   // Provider not approved
   if (!provider.isApproved) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Card className="mx-auto max-w-lg text-center">
+      <div>
+        <Card className="mx-auto max-w-lg text-center mt-12">
           <CardHeader>
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100">
               <Clock className="h-8 w-8 text-yellow-600" />
@@ -117,8 +108,34 @@ export default function ProviderDashboardPage() {
     .filter((o) => o.status === "DELIVERED")
     .reduce((sum, o) => sum + o.totalPrice, 0);
 
+  // Prepare Chart Data
+  // 1. Orders by Status Bar Chart
+  const statusCounts = orders.reduce((acc, order) => {
+    acc[order.status] = (acc[order.status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  const statusData = Object.keys(statusCounts).map(status => ({
+    name: status,
+    count: statusCounts[status]
+  }));
+
+  // 2. Revenue Line Chart (mocking over last few orders by Date)
+  const sortedOrders = [...orders].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  const revenueByDate = sortedOrders.reduce((acc, order) => {
+    if (order.status !== "DELIVERED") return acc;
+    const dateStr = new Date(order.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    acc[dateStr] = (acc[dateStr] || 0) + order.totalPrice;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  const revenueData = Object.keys(revenueByDate).map(date => ({
+    date,
+    revenue: revenueByDate[date]
+  }));
+
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div>
       <div className="mb-8">
         <h1 className="mb-2 text-3xl font-bold">Welcome back, {user?.name}</h1>
         <p className="text-muted-foreground">
@@ -170,6 +187,57 @@ export default function ProviderDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charts */}
+      <div className="grid gap-6 md:grid-cols-2 mb-8">
+        <Card className="shadow-sm border-0">
+          <CardHeader>
+            <CardTitle>Sales Over Time</CardTitle>
+            <CardDescription>Daily revenue from delivered orders</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px] w-full">
+              {revenueData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={revenueData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="date" axisLine={false} tickLine={false} tickMargin={10} />
+                    <YAxis axisLine={false} tickLine={false} tickFormatter={(val) => `$${val}`} />
+                    <RechartsTooltip formatter={(value) => [`$${value}`, "Revenue"]} />
+                    <Line type="monotone" dataKey="revenue" stroke="#2563eb" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex h-full items-center justify-center text-muted-foreground">Not enough data</div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-sm border-0">
+          <CardHeader>
+            <CardTitle>Orders by Status</CardTitle>
+            <CardDescription>Current state of your orders</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px] w-full">
+              {statusData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={statusData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tickMargin={10} />
+                    <YAxis axisLine={false} tickLine={false} />
+                    <RechartsTooltip />
+                    <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} barSize={40} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex h-full items-center justify-center text-muted-foreground">Not enough data</div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>

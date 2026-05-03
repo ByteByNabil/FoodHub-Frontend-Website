@@ -9,8 +9,7 @@ import type {
   Review,
   User,
 } from "./types";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+import { API_BASE_URL } from "./api-url";
 
 type PaymentResponseShape =
   | ApiResponse<{
@@ -125,6 +124,8 @@ class ApiClient {
     if (filters?.maxPrice) params.set("maxPrice", filters.maxPrice.toString());
     if (filters?.page) params.set("page", filters.page.toString());
     if (filters?.limit) params.set("limit", filters.limit.toString());
+    if (filters?.sortBy) params.set("sortBy", filters.sortBy);
+    if (filters?.sortOrder) params.set("sortOrder", filters.sortOrder);
 
     const queryString = params.toString();
     return this.request(`/api/meals${queryString ? `?${queryString}` : ""}`);
@@ -295,4 +296,4 @@ class ApiClient {
   }
 }
 
-export const api = new ApiClient(API_URL);
+export const api = new ApiClient(API_BASE_URL);

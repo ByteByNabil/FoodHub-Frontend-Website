@@ -1,10 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Minus, Plus, ShoppingCart, Trash2, ShoppingBag, Sparkles, ArrowLeft, Shield, Truck, Clock } from "lucide-react";
+import {
+  ArrowRight,
+  Minus,
+  Plus,
+  ShoppingCart,
+  Trash2,
+  ShoppingBag,
+  Sparkles,
+  ArrowLeft,
+  Shield,
+  Truck,
+  Clock,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/contexts/cart-context";
@@ -13,17 +31,18 @@ import { useAuth } from "@/contexts/auth-context";
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 }
+  exit: { opacity: 0, y: -20 },
 };
 
 export default function CartPage() {
-  const { items, updateQuantity, removeFromCart, clearCart, totalPrice } = useCart();
+  const { items, updateQuantity, removeFromCart, clearCart, totalPrice } =
+    useCart();
   const { isAuthenticated, isCustomer } = useAuth();
 
   if (!isAuthenticated || !isCustomer) {
     return (
       <div className="min-h-[calc(100vh-200px)] flex items-center justify-center px-4 py-12">
-        <motion.div 
+        <motion.div
           className="w-full max-w-md text-center"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -36,7 +55,11 @@ export default function CartPage() {
           <p className="text-muted-foreground mb-8">
             Please sign in as a customer to view and manage your cart.
           </p>
-          <Button size="lg" className="h-12 px-8 shadow-lg shadow-primary/25" asChild>
+          <Button
+            size="lg"
+            className="h-12 px-8 shadow-lg shadow-primary/25"
+            asChild
+          >
             <Link href="/login">
               Sign In to Continue
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -50,7 +73,7 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <div className="min-h-[calc(100vh-200px)] flex items-center justify-center px-4 py-12">
-        <motion.div 
+        <motion.div
           className="w-full max-w-md text-center"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -61,9 +84,14 @@ export default function CartPage() {
           </div>
           <h1 className="text-2xl font-bold mb-3">Your Cart is Empty</h1>
           <p className="text-muted-foreground mb-8">
-            Looks like you haven&apos;t added any delicious meals yet. Start exploring!
+            Looks like you haven&apos;t added any delicious meals yet. Start
+            exploring!
           </p>
-          <Button size="lg" className="h-12 px-8 shadow-lg shadow-primary/25" asChild>
+          <Button
+            size="lg"
+            className="h-12 px-8 shadow-lg shadow-primary/25"
+            asChild
+          >
             <Link href="/meals">
               <Sparkles className="mr-2 h-4 w-4" />
               Browse Meals
@@ -79,14 +107,14 @@ export default function CartPage() {
       {/* Header */}
       <div className="bg-background border-b border-border">
         <div className="container mx-auto px-4 py-8">
-          <motion.div 
+          <motion.div
             className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
             <div>
-              <Link 
-                href="/meals" 
+              <Link
+                href="/meals"
                 className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -94,7 +122,8 @@ export default function CartPage() {
               </Link>
               <h1 className="text-3xl font-bold">Shopping Cart</h1>
               <p className="text-muted-foreground mt-1">
-                {items.length} {items.length === 1 ? "item" : "items"} in your cart
+                {items.length} {items.length === 1 ? "item" : "items"} in your
+                cart
               </p>
             </div>
             <Button variant="outline" onClick={clearCart} className="h-11">
@@ -108,7 +137,7 @@ export default function CartPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Cart Items */}
-          <motion.div 
+          <motion.div
             className="lg:col-span-2"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -116,11 +145,10 @@ export default function CartPage() {
           >
             <Card className="border-0 shadow-lg overflow-hidden">
               <CardContent className="p-0">
-                <AnimatePresence>
+                <AnimatePresence initial={false} mode="popLayout">
                   {items.map((item, index) => (
                     <motion.div
                       key={item.meal.id}
-                      layout
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 20 }}
@@ -214,7 +242,9 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Delivery Fee</span>
-                  <Badge variant="secondary" className="font-normal">Free</Badge>
+                  <Badge variant="secondary" className="font-normal">
+                    Free
+                  </Badge>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Service Fee</span>
@@ -223,7 +253,9 @@ export default function CartPage() {
                 <Separator className="my-4" />
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold">Total</span>
-                  <span className="text-2xl font-bold text-primary">${totalPrice.toFixed(2)}</span>
+                  <span className="text-2xl font-bold text-primary">
+                    ${totalPrice.toFixed(2)}
+                  </span>
                 </div>
 
                 {/* Trust badges */}
@@ -249,7 +281,11 @@ export default function CartPage() {
                 </div>
               </CardContent>
               <CardFooter className="pt-0">
-                <Button asChild className="w-full h-14 text-base shadow-lg shadow-primary/25" size="lg">
+                <Button
+                  asChild
+                  className="w-full h-14 text-base shadow-lg shadow-primary/25"
+                  size="lg"
+                >
                   <Link href="/checkout">
                     Proceed to Checkout
                     <ArrowRight className="ml-2 h-5 w-5" />

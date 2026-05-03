@@ -2,7 +2,7 @@
 
 import { use, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Minus, Plus, ShoppingCart, Star, Store, Loader2 } from "lucide-react";
+import { ArrowLeft, Minus, Plus, ShoppingCart, Star, Store, Loader2, Clock, Flame, Leaf } from "lucide-react";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { MealCard } from "@/components/meal-card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/contexts/cart-context";
 import { useAuth } from "@/contexts/auth-context";
 import { api } from "@/lib/api";
@@ -48,16 +51,24 @@ export default function MealDetailPage({ params }: MealPageProps) {
     { revalidateOnFocus: false }
   );
 
+  const meal = mealData?.data;
+
+  const { data: relatedMealsData, isLoading: isLoadingRelated } = useSWR(
+    meal?.categoryId ? ["related-meals", meal.categoryId] : null,
+    () => api.getMeals({ categoryId: meal?.categoryId, limit: 5 }),
+    { revalidateOnFocus: false }
+  );
+
   const { data: myOrdersData } = useSWR(
     isAuthenticated ? ["my-orders-for-review"] : null,
     () => api.getMyOrders(),
     { revalidateOnFocus: false }
   );
 
-  const meal = mealData?.data;
   const reviews: Review[] = reviewsData?.data || [];
   const rating = ratingData?.data;
   const myOrders = myOrdersData?.data || [];
+  const relatedMeals = relatedMealsData?.data?.data?.filter((m: any) => m.id !== id).slice(0, 4) || [];
   const hasDeliveredOrder = myOrders.some(
     (order) =>
       order.status === "DELIVERED" &&
@@ -177,97 +188,154 @@ export default function MealDetailPage({ params }: MealPageProps) {
         </Link>
       </Button>
 
-      <div className="grid gap-8 lg:grid-cols-2">
-        {/* Image */}
-        <div className="relative aspect-square overflow-hidden rounded-lg">
-          <img
-            src={
-              meal.image ||
-              "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=800&fit=crop"
-            }
-            alt={meal.title}
-            className="h-full w-full object-cover"
-          />
-          {!meal.isAvailable && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-              <Badge variant="secondary" className="text-lg">
-                Not Available
-              </Badge>
-            </div>
-          )}
-        </div>
-
-        {/* Details */}
-        <div className="space-y-6">
-          <div>
-            {meal.category && (
-              <Badge className="mb-3">{meal.category.name}</Badge>
-            )}
-            <h1 className="mb-2 text-3xl font-bold">{meal.title}</h1>
-            {meal.description && (
-              <p className="text-muted-foreground">{meal.description}</p>
+      <div className="grid gap-10 lg:grid-cols-2">
+        {/* Image Carousel */}
+        <div className="space-y-4">
+          <div className="relative rounded-2xl overflow-hidden bg-muted border border-border shadow-sm">
+            <Carousel className="w-full">
+              <CarouselContent>
+                {[
+                  meal.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=800&fit=crop",
+                  "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&h=800&fit=crop",
+                  "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&h=800&fit=crop"
+                ].map((img, idx) => (
+                  <CarouselItem key={idx}>
+                    <div className="aspect-square">
+                      <img
+                        src={img}
+                        alt={`${meal.title} view ${idx + 1}`}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-4 bg-background/80 backdrop-blur-md" />
+              <CarouselNext className="right-4 bg-background/80 backdrop-blur-md" />
+            </Carousel>
+            {!meal.isAvailable && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-10">
+                <Badge variant="destructive" className="text-lg px-6 py-2 shadow-xl">
+                  Currently Unavailable
+                </Badge>
+              </div>
             )}
           </div>
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {[
+              meal.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=800&fit=crop",
+              "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&h=800&fit=crop",
+              "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&h=800&fit=crop"
+            ].map((img, idx) => (
+              <div key={idx} className="h-20 w-20 shrink-0 rounded-lg overflow-hidden border-2 border-transparent hover:border-primary cursor-pointer transition-colors">
+                <img src={img} alt={`Thumbnail ${idx + 1}`} className="h-full w-full object-cover" />
+              </div>
+            ))}
+          </div>
+        </div>
 
-          {/* Rating */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  className={`h-5 w-5 ${
-                    star <= Math.round(avgRating)
-                      ? "fill-yellow-400 text-yellow-400"
-                      : "text-muted-foreground"
-                  }`}
-                />
-              ))}
+        {/* Details & Action Sticky Sidebar */}
+        <div className="relative">
+          <div className="sticky top-28 space-y-8">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                {meal.category && (
+                  <Badge className="bg-primary/10 text-primary border-0 shadow-none hover:bg-primary/20">{meal.category.name}</Badge>
+                )}
+                <Badge variant="outline" className="border-accent text-accent">Chef's Special</Badge>
+              </div>
+              <h1 className="mb-4 text-4xl font-extrabold tracking-tight">{meal.title}</h1>
+              {meal.description && (
+                <p className="text-muted-foreground text-lg leading-relaxed">{meal.description}</p>
+              )}
             </div>
-            <span className="text-sm text-muted-foreground">
-              {avgRating.toFixed(1)} ({reviewCount} reviews)
-            </span>
+
+          {/* Key Info / Specs */}
+          <div className="grid grid-cols-2 gap-4 py-6 border-y border-border">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/10 text-orange-500">
+                <Flame className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Calories</p>
+                <p className="text-xs text-muted-foreground">~650 kcal</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10 text-blue-500">
+                <Clock className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Prep Time</p>
+                <p className="text-xs text-muted-foreground">15 - 25 mins</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/10 text-green-500">
+                <Leaf className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Dietary</p>
+                <p className="text-xs text-muted-foreground">Contains Gluten</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10 text-amber-500">
+                <Star className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Rating</p>
+                <p className="text-xs text-muted-foreground">{avgRating.toFixed(1)} ({reviewCount} reviews)</p>
+              </div>
+            </div>
           </div>
 
           {/* Provider */}
           {meal.provider && (
             <Link
               href={`/providers/${meal.provider.id}`}
-              className="flex items-center gap-3 rounded-lg border p-4 transition-colors hover:bg-muted/50"
+              className="group flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/50 hover:shadow-md"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                <Store className="h-6 w-6 text-primary" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                <Store className="h-7 w-7 text-primary group-hover:text-primary-foreground" />
               </div>
-              <div>
-                <p className="font-medium">
+              <div className="flex-1">
+                <p className="font-bold text-lg leading-none mb-1">
                   {meal.provider.restaurantName || meal.provider.user?.name}
                 </p>
-                <p className="text-sm text-muted-foreground">View restaurant</p>
+                <p className="text-sm text-muted-foreground">View full restaurant menu</p>
               </div>
+              <ArrowLeft className="h-5 w-5 rotate-180 text-muted-foreground group-hover:text-primary transition-colors" />
             </Link>
           )}
 
           {/* Price and Add to Cart */}
-          <Card>
+          <Card className="border-primary/20 shadow-lg bg-card overflow-hidden">
+            <div className="bg-primary/5 px-6 py-4 border-b border-primary/10">
+              <h3 className="font-semibold text-primary">Order Details</h3>
+            </div>
             <CardContent className="p-6">
-              <div className="mb-4 flex items-center justify-between">
-                <span className="text-3xl font-bold text-primary">
+              <div className="mb-6 flex items-center justify-between">
+                <span className="text-4xl font-black text-foreground">
                   ${meal.price.toFixed(2)}
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 bg-muted p-1 rounded-lg">
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
+                    className="h-8 w-8 rounded-md bg-background shadow-sm hover:bg-background"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     disabled={quantity <= 1}
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
-                  <span className="w-12 text-center text-lg font-medium">
+                  <span className="w-10 text-center text-lg font-bold">
                     {quantity}
                   </span>
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
+                    className="h-8 w-8 rounded-md bg-background shadow-sm hover:bg-background"
                     onClick={() => setQuantity(quantity + 1)}
                   >
                     <Plus className="h-4 w-4" />
@@ -275,16 +343,17 @@ export default function MealDetailPage({ params }: MealPageProps) {
                 </div>
               </div>
               <Button
-                className="w-full"
+                className="w-full h-14 text-lg font-bold shadow-xl shadow-primary/20"
                 size="lg"
                 onClick={handleAddToCart}
                 disabled={!meal.isAvailable}
               >
-                <ShoppingCart className="mr-2 h-5 w-5" />
+                <ShoppingCart className="mr-3 h-6 w-6" />
                 Add to Cart - ${(meal.price * quantity).toFixed(2)}
               </Button>
             </CardContent>
           </Card>
+          </div>
         </div>
       </div>
 
@@ -453,6 +522,36 @@ export default function MealDetailPage({ params }: MealPageProps) {
             )}
           </CardContent>
         </Card>
+      </div>
+
+      {/* Related Items Section */}
+      <div className="mt-16">
+        <h2 className="text-3xl font-bold mb-8">You Might Also Like</h2>
+        {isLoadingRelated ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex flex-col gap-3 rounded-2xl border p-4 bg-card h-[380px]">
+                <Skeleton className="h-[200px] w-full rounded-xl" />
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <div className="mt-auto pt-4 flex justify-between">
+                  <Skeleton className="h-6 w-16" />
+                  <Skeleton className="h-6 w-16" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : relatedMeals.length > 0 ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {relatedMeals.map((relatedMeal: any) => (
+              <MealCard key={relatedMeal.id} meal={relatedMeal} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-muted-foreground text-center py-10 bg-muted/20 rounded-xl border border-border">
+            No related meals found in this category.
+          </p>
+        )}
       </div>
     </div>
   );

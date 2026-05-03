@@ -21,27 +21,8 @@ export default function ProviderSetupPage() {
     restaurantName: "",
     description: "",
     address: "",
+    image: "",
   });
-
-  if (!isAuthenticated || !isProvider) {
-    return (
-      <div className="container mx-auto flex min-h-[calc(100vh-200px)] items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-muted-foreground">
-              This page is only accessible to restaurant providers
-            </p>
-            <Button asChild>
-              <Link href="/login">Sign In</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +33,7 @@ export default function ProviderSetupPage() {
         restaurantName: formData.restaurantName,
         description: formData.description || undefined,
         address: formData.address,
+        image: formData.image || undefined,
       });
 
       toast.success("Restaurant profile created! Awaiting admin approval.");
@@ -63,9 +45,61 @@ export default function ProviderSetupPage() {
     }
   };
 
+  // Not logged in
+  if (!isAuthenticated) {
+    return (
+      <div>
+        <Card className="w-full max-w-lg mx-auto mt-12 border-0 shadow-md text-center">
+          <CardHeader>
+            <CardTitle className="text-2xl">Sign In Required</CardTitle>
+            <CardDescription>
+              You need to be logged in as a Provider to set up a restaurant.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/login">Sign In</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Logged in but NOT a Provider
+  if (!isProvider) {
+    return (
+      <div>
+        <Card className="w-full max-w-lg mx-auto mt-12 border-0 shadow-md text-center">
+          <CardHeader>
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+              <Store className="h-8 w-8 text-red-600" />
+            </div>
+            <CardTitle className="text-2xl">Provider Account Required</CardTitle>
+            <CardDescription>
+              You are currently logged in as a <strong>Customer</strong>. Only accounts
+              with the <strong>Provider</strong> role can create a restaurant profile.
+              <br /><br />
+              Please register a new account and select{" "}
+              <strong>&quot;I want to sell food&quot;</strong> during sign-up.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <Button asChild className="w-full">
+              <Link href="/register">Register as Provider</Link>
+            </Button>
+            <Button variant="outline" asChild className="w-full">
+              <Link href="/">Go Home</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto flex min-h-[calc(100vh-200px)] items-center justify-center px-4 py-12">
-      <Card className="w-full max-w-lg">
+    <div>
+      <Card className="w-full max-w-lg mx-auto mt-12 border-0 shadow-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <Store className="h-8 w-8 text-primary" />
@@ -112,6 +146,30 @@ export default function ProviderSetupPage() {
                 }
                 required
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="image">Image URL</Label>
+              <Input
+                id="image"
+                type="url"
+                placeholder="https://example.com/image.jpg"
+                value={formData.image}
+                onChange={(e) =>
+                  setFormData({ ...formData, image: e.target.value })
+                }
+              />
+              {formData.image && (
+                <div className="mt-3 overflow-hidden rounded-lg border aspect-video relative max-w-sm">
+                  <img
+                    src={formData.image}
+                    alt="Restaurant Preview"
+                    className="object-cover w-full h-full"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                </div>
+              )}
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (

@@ -2,7 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShoppingCart, Menu, X, User, LogOut, ChefHat, Shield, UtensilsCrossed, Sparkles } from "lucide-react";
+import {
+  ShoppingCart,
+  Menu,
+  X,
+  User,
+  LogOut,
+  ChefHat,
+  Shield,
+  UtensilsCrossed,
+  Sparkles,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -18,11 +28,27 @@ import { useAuth } from "@/contexts/auth-context";
 import { useCart } from "@/contexts/cart-context";
 import { signOut } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const publicLinks = [
   { href: "/", label: "Home" },
   { href: "/meals", label: "Meals" },
   { href: "/providers", label: "Restaurants" },
+  { href: "/#about", label: "About Us" },
+];
+
+const customerLinks = [
+  { href: "/orders", label: "My Orders" },
+  { href: "/profile", label: "Profile" },
+];
+
+const providerLinks = [
+  { href: "/provider/dashboard", label: "Dashboard" },
+  { href: "/provider/menu", label: "Menu" },
+];
+
+const adminLinks = [
+  { href: "/admin", label: "Admin" },
 ];
 
 export function Navbar() {
@@ -46,12 +72,12 @@ export function Navbar() {
   };
 
   return (
-    <header 
+    <header
       className={cn(
         "sticky top-0 z-50 w-full transition-all duration-300",
-        scrolled 
-          ? "bg-background/95 backdrop-blur-xl border-b border-border shadow-sm" 
-          : "bg-transparent"
+        scrolled
+          ? "bg-background/95 backdrop-blur-xl border-b border-border shadow-sm"
+          : "bg-transparent",
       )}
     >
       <nav className="container mx-auto flex h-20 items-center justify-between px-4">
@@ -62,7 +88,9 @@ export function Navbar() {
           </div>
           <div className="flex flex-col">
             <span className="text-xl font-bold tracking-tight">FoodHub</span>
-            <span className="text-xs text-muted-foreground hidden sm:block">Delicious Delivered</span>
+            <span className="text-xs text-muted-foreground hidden sm:block">
+              Delicious Delivered
+            </span>
           </div>
         </Link>
 
@@ -76,17 +104,59 @@ export function Navbar() {
                 "relative px-4 py-2 text-sm font-medium transition-colors rounded-lg",
                 pathname === link.href
                   ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
               )}
             >
               {link.label}
               {pathname === link.href && (
                 <motion.div
-                  layoutId="navbar-indicator"
                   className="absolute inset-0 bg-primary/10 rounded-lg -z-10"
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                 />
               )}
+            </Link>
+          ))}
+          {/* Authenticated Links inline to meet 6 route minimum */}
+          {isAuthenticated && isCustomer && customerLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={cn(
+                "relative px-4 py-2 text-sm font-medium transition-colors rounded-lg",
+                pathname === link.href
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+              )}
+            >
+              {link.label}
+            </Link>
+          ))}
+          {isAuthenticated && isProvider && providerLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={cn(
+                "relative px-4 py-2 text-sm font-medium transition-colors rounded-lg",
+                pathname === link.href
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+              )}
+            >
+              {link.label}
+            </Link>
+          ))}
+          {isAuthenticated && isAdmin && adminLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={cn(
+                "relative px-4 py-2 text-sm font-medium transition-colors rounded-lg",
+                pathname === link.href
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+              )}
+            >
+              {link.label}
             </Link>
           ))}
         </div>
@@ -95,20 +165,23 @@ export function Navbar() {
         <div className="flex items-center gap-3">
           {/* Cart - Only for customers */}
           {isCustomer && (
-            <Link href="/cart" className="relative">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className={cn(
-                  "relative h-11 w-11 rounded-xl",
-                  totalItems > 0 && "bg-primary/10"
-                )}
-              >
-                <ShoppingCart className={cn(
-                  "h-5 w-5",
-                  totalItems > 0 ? "text-primary" : "text-muted-foreground"
-                )} />
-                <AnimatePresence>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "relative h-11 w-11 rounded-xl",
+                totalItems > 0 && "bg-primary/10",
+              )}
+              asChild
+            >
+              <Link href="/cart">
+                <ShoppingCart
+                  className={cn(
+                    "h-5 w-5",
+                    totalItems > 0 ? "text-primary" : "text-muted-foreground",
+                  )}
+                />
+                <AnimatePresence initial={false}>
                   {totalItems > 0 && (
                     <motion.span
                       initial={{ scale: 0 }}
@@ -120,17 +193,17 @@ export function Navbar() {
                     </motion.span>
                   )}
                 </AnimatePresence>
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           )}
 
           {/* User Menu */}
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="h-11 w-11 rounded-xl bg-muted/50 hover:bg-muted"
                 >
                   <User className="h-5 w-5" />
@@ -139,7 +212,9 @@ export function Navbar() {
               <DropdownMenuContent align="end" className="w-64 p-2">
                 <div className="px-3 py-3 mb-2 bg-muted/50 rounded-lg">
                   <p className="font-semibold">{user?.name}</p>
-                  <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {user?.email}
+                  </p>
                   {isProvider && (
                     <Badge variant="secondary" className="mt-2">
                       <ChefHat className="mr-1 h-3 w-3" />
@@ -171,7 +246,10 @@ export function Navbar() {
                 {isProvider && (
                   <>
                     <DropdownMenuItem asChild className="py-2.5 cursor-pointer">
-                      <Link href="/provider/dashboard" className="flex items-center gap-2">
+                      <Link
+                        href="/provider/dashboard"
+                        className="flex items-center gap-2"
+                      >
                         <ChefHat className="h-4 w-4" />
                         Dashboard
                       </Link>
@@ -207,8 +285,8 @@ export function Navbar() {
                 )}
 
                 <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={handleSignOut} 
+                <DropdownMenuItem
+                  onClick={handleSignOut}
                   className="py-2.5 text-destructive focus:text-destructive cursor-pointer"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
@@ -230,6 +308,8 @@ export function Navbar() {
             </div>
           )}
 
+          <ThemeToggle />
+
           {/* Mobile Menu Button */}
           <Button
             variant="ghost"
@@ -237,35 +317,17 @@ export function Navbar() {
             className="h-11 w-11 rounded-xl md:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            <AnimatePresence mode="wait">
-              {mobileMenuOpen ? (
-                <motion.div
-                  key="close"
-                  initial={{ rotate: -90, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: 90, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <X className="h-5 w-5" />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="menu"
-                  initial={{ rotate: 90, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: -90, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Menu className="h-5 w-5" />
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {mobileMenuOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
           </Button>
         </div>
       </nav>
 
       {/* Mobile Menu */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
@@ -284,7 +346,46 @@ export function Navbar() {
                       "px-4 py-3 rounded-xl text-base font-medium transition-colors",
                       pathname === link.href
                         ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    )}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                {isAuthenticated && isCustomer && customerLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={cn(
+                      "px-4 py-3 rounded-xl text-base font-medium transition-colors",
+                      pathname === link.href ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"
+                    )}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                {isAuthenticated && isProvider && providerLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={cn(
+                      "px-4 py-3 rounded-xl text-base font-medium transition-colors",
+                      pathname === link.href ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"
+                    )}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                {isAuthenticated && isAdmin && adminLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={cn(
+                      "px-4 py-3 rounded-xl text-base font-medium transition-colors",
+                      pathname === link.href ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -302,7 +403,10 @@ export function Navbar() {
                       Sign In
                     </Link>
                     <Button className="mt-2 h-12" asChild>
-                      <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
+                      <Link
+                        href="/register"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
                         <Sparkles className="mr-2 h-4 w-4" />
                         Get Started
                       </Link>

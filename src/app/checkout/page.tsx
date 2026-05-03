@@ -1,365 +1,236 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  MapPin,
-  ShoppingCart,
-  Loader2,
-  CreditCard,
-  Banknote,
-} from "lucide-react";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { motion } from "framer-motion";
+import { MapPin, ArrowRight, ArrowLeft, Loader2, CreditCard } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
 import { useCart } from "@/contexts/cart-context";
 import { useAuth } from "@/contexts/auth-context";
 import { api } from "@/lib/api";
 
-type PaymentMethod = "stripe" | "cod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+
+const checkoutSchema = z.object({
+  address: z.string().min(5, "Please enter a complete delivery address"),
+});
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, totalPrice, clearCart } = useCart();
-  const { isAuthenticated, isCustomer, user } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const [address, setAddress] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("stripe");
+  const { isAuthenticated, isCustomer } = useAuth();
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  if (!isAuthenticated || !isCustomer) {
-    return (
-      <div className="container mx-auto flex min-h-[calc(100vh-200px)] items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <CardTitle>Sign In Required</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Please sign in as a customer to checkout
-            </p>
-          </CardContent>
-          <CardFooter className="justify-center">
-            <Button asChild>
-              <Link href="/login">Sign In</Link>
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    );
-  }
+  const form = useForm<z.infer<typeof checkoutSchema>>({
+    resolver: zodResolver(checkoutSchema),
+    defaultValues: {
+      address: "",
+    },
+  });
 
-  if (items.length === 0) {
-    return (
-      <div className="container mx-auto flex min-h-[calc(100vh-200px)] items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-              <ShoppingCart className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <CardTitle>Your Cart is Empty</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Add some items to your cart first
-            </p>
-          </CardContent>
-          <CardFooter className="justify-center">
-            <Button asChild>
-              <Link href="/meals">Browse Meals</Link>
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    );
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!address.trim() || address.length < 5) {
-      toast.error("Please enter a valid delivery address");
-      return;
+  // Redirect if not auth or empty cart
+  if (!isAuthenticated || !isCustomer || items.length === 0) {
+    if (typeof window !== "undefined") {
+      router.push("/cart");
     }
+    return null;
+  }
 
-    setIsLoading(true);
-
+  const onSubmit = async (values: z.infer<typeof checkoutSchema>) => {
     try {
+      setIsProcessing(true);
+
+      // 1. Create the Order in the database
       const orderItems = items.map((item) => ({
         mealId: item.meal.id,
         quantity: item.quantity,
       }));
 
-      // Create the order first
       const orderResponse = await api.createOrder({
         items: orderItems,
-        address: address.trim(),
+        address: values.address,
       });
 
-      const orderId = orderResponse.data?.id;
-
-      if (!orderId) {
+      if (!orderResponse.data) {
         throw new Error("Failed to create order");
       }
 
-      if (paymentMethod === "stripe") {
-        // Create Stripe checkout session
-        const paymentResponse = await api.createPayment(orderId);
+      const orderId = orderResponse.data.id;
 
-        if (paymentResponse.data?.url) {
-          // Clear cart before redirecting to Stripe
-          clearCart();
-          // Redirect to Stripe checkout
-          window.location.href = paymentResponse.data.url;
-        } else {
-          throw new Error("Failed to create payment session");
-        }
-      } else {
-        // Cash on delivery - just redirect to orders
-        clearCart();
-        toast.success("Order placed successfully! Pay on delivery.");
-        router.push("/orders");
+      // 2. Generate the Stripe Checkout Session
+      const paymentResponse = await api.createPayment(orderId);
+
+      if (!paymentResponse.data?.url) {
+        throw new Error("Failed to generate payment link");
       }
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to place order",
-      );
-    } finally {
-      setIsLoading(false);
+
+      // 3. Clear local cart
+      clearCart();
+
+      // 4. Redirect to Stripe
+      window.location.href = paymentResponse.data.url;
+      
+    } catch (error: any) {
+      console.error("Checkout error:", error);
+      toast.error(error.message || "An error occurred during checkout. Please try again.");
+      setIsProcessing(false);
     }
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Button variant="ghost" asChild className="mb-6">
-        <Link href="/cart">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Cart
-        </Link>
-      </Button>
+    <div className="min-h-screen bg-muted/30 py-12">
+      <div className="container mx-auto px-4 max-w-5xl">
+        <div className="mb-8">
+          <Link
+            href="/cart"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Cart
+          </Link>
+          <h1 className="text-3xl font-bold">Secure Checkout</h1>
+        </div>
 
-      <h1 className="mb-8 text-3xl font-bold">Checkout</h1>
-
-      <form onSubmit={handleSubmit}>
         <div className="grid gap-8 lg:grid-cols-3">
-          {/* Left Column - Delivery & Payment */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Delivery Information */}
-            <Card>
+          {/* Form Section */}
+          <motion.div
+            className="lg:col-span-2"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card className="border-0 shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5" />
-                  Delivery Information
+                  <MapPin className="h-5 w-5 text-primary" />
+                  Delivery Details
                 </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>Name</Label>
-                    <Input value={user?.name || ""} disabled />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Email</Label>
-                    <Input value={user?.email || ""} disabled />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="address">Delivery Address *</Label>
-                  <Textarea
-                    id="address"
-                    placeholder="Enter your full delivery address"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    required
-                    minLength={5}
-                    rows={3}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Payment Method */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
-                  Payment Method
-                </CardTitle>
+                <CardDescription>
+                  Where should we deliver your delicious food?
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <RadioGroup
-                  value={paymentMethod}
-                  onValueChange={(value) =>
-                    setPaymentMethod(value as PaymentMethod)
-                  }
-                  className="space-y-3"
-                >
-                  <div className="flex items-center space-x-3 rounded-lg border p-4 cursor-pointer hover:bg-muted/50 transition-colors">
-                    <RadioGroupItem value="stripe" id="stripe" />
-                    <Label htmlFor="stripe" className="flex-1 cursor-pointer">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600">
-                          <CreditCard className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                          <p className="font-medium">Pay with Card</p>
-                          <p className="text-sm text-muted-foreground">
-                            Secure payment via Stripe
-                          </p>
-                        </div>
-                      </div>
-                    </Label>
-                    <div className="flex gap-1">
-                      <div className="h-6 w-10 rounded bg-gradient-to-r from-blue-600 to-blue-800 flex items-center justify-center">
-                        <span className="text-[8px] font-bold text-white">
-                          VISA
-                        </span>
-                      </div>
-                      <div className="h-6 w-10 rounded bg-gradient-to-r from-red-500 to-orange-500 flex items-center justify-center">
-                        <span className="text-[8px] font-bold text-white">
-                          MC
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <FormField
+                      control={form.control}
+                      name="address"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Full Delivery Address</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="123 Main St, Apt 4B, New York, NY 10001"
+                              {...field}
+                              className="h-12 bg-muted/50"
+                              disabled={isProcessing}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <div className="flex items-center space-x-3 rounded-lg border p-4 cursor-pointer hover:bg-muted/50 transition-colors">
-                    <RadioGroupItem value="cod" id="cod" />
-                    <Label htmlFor="cod" className="flex-1 cursor-pointer">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-green-500 to-emerald-600">
-                          <Banknote className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                          <p className="font-medium">Cash on Delivery</p>
-                          <p className="text-sm text-muted-foreground">
-                            Pay when your order arrives
-                          </p>
-                        </div>
-                      </div>
-                    </Label>
-                  </div>
-                </RadioGroup>
+                    {/* Submit is handled via the sidebar button, but we keep a hidden one here to support 'enter' key */}
+                    <button type="submit" className="hidden" />
+                  </form>
+                </Form>
               </CardContent>
             </Card>
 
-            {/* Order Items */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Order Items ({items.length})</CardTitle>
-              </CardHeader>
-              <CardContent className="divide-y">
-                {items.map((item) => (
-                  <div
-                    key={item.meal.id}
-                    className="flex items-center gap-4 py-4 first:pt-0 last:pb-0"
-                  >
-                    <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg">
-                      <img
-                        src={
-                          item.meal.image ||
-                          "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&h=100&fit=crop"
-                        }
-                        alt={item.meal.title}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium">{item.meal.title}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Qty: {item.quantity} x ${item.meal.price.toFixed(2)}
-                      </p>
-                    </div>
-                    <span className="font-semibold">
-                      ${(item.meal.price * item.quantity).toFixed(2)}
-                    </span>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
+            <div className="mt-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <CreditCard className="h-4 w-4" />
+              Payments are securely processed by Stripe
+            </div>
+          </motion.div>
 
-          {/* Right Column - Order Summary */}
-          <div>
-            <Card className="sticky top-24">
-              <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
+          {/* Order Summary Sidebar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="sticky top-24 border-0 shadow-lg">
+              <CardHeader className="bg-primary/5 pb-4">
+                <CardTitle className="text-xl">Order Summary</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="pt-6 space-y-4">
+                <div className="max-h-[300px] overflow-y-auto space-y-4 pr-2">
+                  {items.map((item) => (
+                    <div key={item.meal.id} className="flex justify-between text-sm">
+                      <span className="text-muted-foreground max-w-[180px] truncate">
+                        {item.quantity}x {item.meal.title}
+                      </span>
+                      <span className="font-medium">
+                        ${(item.meal.price * item.quantity).toFixed(2)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <Separator />
+
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span>${totalPrice.toFixed(2)}</span>
+                  <span className="font-medium">${totalPrice.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Delivery Fee</span>
-                  <span>$0.00</span>
+                  <span className="font-medium text-green-600">Free</span>
                 </div>
-                <Separator />
-                <div className="flex justify-between text-lg font-semibold">
-                  <span>Total</span>
-                  <span className="text-primary">${totalPrice.toFixed(2)}</span>
-                </div>
-
-                <div className="rounded-lg bg-muted p-3 text-sm">
-                  <div className="flex items-center gap-2">
-                    {paymentMethod === "stripe" ? (
-                      <>
-                        <CreditCard className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">
-                          Secure card payment
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <Banknote className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">
-                          Cash on delivery
-                        </span>
-                      </>
-                    )}
-                  </div>
+                <div className="flex justify-between items-center pt-2">
+                  <span className="text-lg font-bold">Total</span>
+                  <span className="text-2xl font-bold text-primary">
+                    ${totalPrice.toFixed(2)}
+                  </span>
                 </div>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="pt-0">
                 <Button
-                  type="submit"
-                  className="w-full"
+                  className="w-full h-14 text-base shadow-lg shadow-primary/25"
                   size="lg"
-                  disabled={isLoading}
+                  disabled={isProcessing}
+                  onClick={() => form.handleSubmit(onSubmit)()}
                 >
-                  {isLoading ? (
+                  {isProcessing ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {paymentMethod === "stripe"
-                        ? "Redirecting to Payment..."
-                        : "Placing Order..."}
-                    </>
-                  ) : paymentMethod === "stripe" ? (
-                    <>
-                      <CreditCard className="mr-2 h-4 w-4" />
-                      Pay ${totalPrice.toFixed(2)}
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Redirecting to Stripe...
                     </>
                   ) : (
-                    `Place Order - $${totalPrice.toFixed(2)}`
+                    <>
+                      Pay ${(totalPrice).toFixed(2)}
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </>
                   )}
                 </Button>
               </CardFooter>
             </Card>
-          </div>
+          </motion.div>
         </div>
-      </form>
+      </div>
     </div>
   );
 }

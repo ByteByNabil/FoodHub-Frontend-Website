@@ -1,9 +1,27 @@
 import { createAuthClient } from "better-auth/react";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+import { inferAdditionalFields } from "better-auth/client/plugins";
+import { API_BASE_URL } from "./api-url";
 
 export const authClient = createAuthClient({
-  baseURL: API_URL,
+  ...(API_BASE_URL ? { baseURL: API_BASE_URL } : {}),
+  plugins: [
+    inferAdditionalFields({
+      user: {
+        role: {
+          type: "string",
+          required: false,
+        },
+        phone: {
+          type: "string",
+          required: false,
+        },
+        status: {
+          type: "string",
+          required: false,
+        },
+      },
+    }),
+  ],
 });
 
 export const { signIn, signUp, signOut, useSession } = authClient;

@@ -6,8 +6,7 @@ import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+import { API_BASE_URL } from "@/lib/api-url";
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
@@ -25,7 +24,7 @@ function VerifyEmailContent() {
 
     const verifyEmail = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/auth/verify-email?token=${token}`, {
+        const response = await fetch(`${API_BASE_URL}/api/auth/verify-email?token=${token}`, {
           credentials: "include",
         });
 

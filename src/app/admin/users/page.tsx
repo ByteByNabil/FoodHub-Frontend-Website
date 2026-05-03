@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Users, Loader2, Shield, Ban, CheckCircle } from "lucide-react";
+import { Users, Loader2, Shield, Ban, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import useSWR, { mutate } from "swr";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -35,21 +35,31 @@ import type { User } from "@/lib/types";
 export default function AdminUsersPage() {
   const { isAuthenticated, isAdmin } = useAuth();
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 10;
   const [updatingUser, setUpdatingUser] = useState<string | null>(null);
 
   const { data: usersData, isLoading } = useSWR(
-    isAuthenticated && isAdmin ? "admin-users" : null,
+    "admin-users",
     () => api.getAllUsers(),
     { revalidateOnFocus: false }
   );
 
   const users: User[] = usersData?.data || [];
 
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(search.toLowerCase()) ||
-      user.email.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredUsers = useMemo(() => {
+    return users.filter(
+      (user) =>
+        user.name.toLowerCase().includes(search.toLowerCase()) ||
+        user.email.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [users, search]);
+
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const paginatedUsers = useMemo(() => {
+    const start = (page - 1) * itemsPerPage;
+    return filteredUsers.slice(start, start + itemsPerPage);
+  }, [filteredUsers, page]);
 
   const handleStatusUpdate = async (userId: string, newStatus: string) => {
     setUpdatingUser(userId);
@@ -64,26 +74,6 @@ export default function AdminUsersPage() {
     }
   };
 
-  if (!isAuthenticated || !isAdmin) {
-    return (
-      <div className="container mx-auto flex min-h-[calc(100vh-200px)] items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-muted-foreground">
-              This page is only accessible to administrators
-            </p>
-            <Button asChild>
-              <Link href="/login">Sign In</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   if (isLoading) {
     return (
       <div className="flex h-96 items-center justify-center">
@@ -93,10 +83,10 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div>
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="mb-2 text-3xl font-bold">User Management</h1>
+          <h1 className="mb-2 text-3xl font-bold tracking-tight">User Management</h1>
           <p className="text-muted-foreground">
             Manage all users on the platform
           </p>
@@ -113,7 +103,10 @@ export default function AdminUsersPage() {
             <Input
               placeholder="Search users..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               className="max-w-xs"
             />
           </div>
@@ -132,7 +125,7 @@ export default function AdminUsersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.map((user) => (
+                {paginatedUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
@@ -217,6 +210,37 @@ export default function AdminUsersPage() {
           {filteredUsers.length === 0 && (
             <div className="py-12 text-center">
               <p className="text-muted-foreground">No users found</p>
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between px-2">
+              <div className="text-sm text-muted-foreground">
+                Showing {(page - 1) * itemsPerPage + 1} to {Math.min(page * itemsPerPage, filteredUsers.length)} of {filteredUsers.length} users
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+                <div className="text-sm font-medium">
+                  Page {page} of {totalPages}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>

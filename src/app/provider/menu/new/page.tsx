@@ -60,6 +60,12 @@ export default function NewMealPage() {
     e.preventDefault();
     setIsLoading(true);
 
+    if (!formData.categoryId) {
+      toast.error("Please select a category");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       await api.createMeal({
         title: formData.title,
@@ -126,11 +132,10 @@ export default function NewMealPage() {
               <div className="space-y-2">
                 <Label htmlFor="category">Category *</Label>
                 <Select
-                  value={formData.categoryId}
+                  value={formData.categoryId || undefined}
                   onValueChange={(value) =>
                     setFormData({ ...formData, categoryId: value })
                   }
-                  required
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select category" />

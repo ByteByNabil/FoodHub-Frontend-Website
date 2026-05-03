@@ -22,6 +22,7 @@ export interface ProviderProfile {
   restaurantName: string;
   description?: string;
   address: string;
+  image?: string;
   isApproved: boolean;
   isDeleted: boolean;
   createdAt: string;
@@ -67,6 +68,8 @@ export interface MealFilters {
   maxPrice?: number;
   page?: number;
   limit?: number;
+  sortBy?: string;
+  sortOrder?: string;
 }
 
 export interface MealsResponse {

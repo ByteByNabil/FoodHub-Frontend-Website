@@ -8,30 +8,47 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth } from "@/contexts/auth-context";
 import { api } from "@/lib/api";
 import type { Order, User } from "@/lib/types";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  Legend
+} from "recharts";
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 export default function AdminDashboardPage() {
-  const { isAuthenticated, isAdmin, user } = useAuth();
+  const { user } = useAuth();
 
   const { data: usersData, isLoading: usersLoading } = useSWR(
-    isAuthenticated && isAdmin ? "admin-users" : null,
+    "admin-users",
     () => api.getAllUsers(),
     { revalidateOnFocus: false }
   );
 
   const { data: ordersData } = useSWR(
-    isAuthenticated && isAdmin ? "admin-orders" : null,
+    "admin-orders",
     () => api.getAllOrders(),
     { revalidateOnFocus: false }
   );
 
   const { data: categoriesData } = useSWR(
-    isAuthenticated && isAdmin ? "categories" : null,
+    "categories",
     () => api.getCategories(),
     { revalidateOnFocus: false }
   );
 
   const { data: providersData } = useSWR(
-    isAuthenticated && isAdmin ? "providers" : null,
+    "providers",
     () => api.getProviders(),
     { revalidateOnFocus: false }
   );
@@ -40,26 +57,6 @@ export default function AdminDashboardPage() {
   const orders: Order[] = ordersData?.data || [];
   const categories = categoriesData?.data || [];
   const providers = providersData?.data || [];
-
-  if (!isAuthenticated || !isAdmin) {
-    return (
-      <div className="container mx-auto flex min-h-[calc(100vh-200px)] items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-muted-foreground">
-              This page is only accessible to administrators
-            </p>
-            <Button asChild>
-              <Link href="/login">Sign In</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   if (usersLoading) {
     return (
@@ -76,18 +73,53 @@ export default function AdminDashboardPage() {
   const customerCount = users.filter((u) => u.role === "CUSTOMER").length;
   const providerCount = users.filter((u) => u.role === "PROVIDER").length;
 
+  // Prepare Chart Data
+  // 1. Roles Pie Chart
+  const roleData = [
+    { name: "Customers", value: customerCount },
+    { name: "Providers", value: providerCount },
+    { name: "Admins", value: users.length - customerCount - providerCount },
+  ].filter(d => d.value > 0);
+
+  // 2. Orders by Status Bar Chart
+  const statusCounts = orders.reduce((acc, order) => {
+    acc[order.status] = (acc[order.status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  const statusData = Object.keys(statusCounts).map(status => ({
+    name: status,
+    count: statusCounts[status]
+  }));
+
+  // 3. Revenue Line Chart (mocking over last few orders by Date)
+  // Sort orders by createdAt
+  const sortedOrders = [...orders].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  // Group by date string (e.g., "MM/DD")
+  const revenueByDate = sortedOrders.reduce((acc, order) => {
+    if (order.status !== "DELIVERED") return acc;
+    const dateStr = new Date(order.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    acc[dateStr] = (acc[dateStr] || 0) + order.totalPrice;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  const revenueData = Object.keys(revenueByDate).map(date => ({
+    date,
+    revenue: revenueByDate[date]
+  }));
+
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div>
       <div className="mb-8">
-        <h1 className="mb-2 text-3xl font-bold">Admin Dashboard</h1>
+        <h1 className="mb-2 text-3xl font-bold tracking-tight">Overview</h1>
         <p className="text-muted-foreground">
-          Welcome back, {user?.name}. Here&apos;s an overview of your platform.
+          Welcome back, {user?.name}. Here&apos;s what&apos;s happening across the platform today.
         </p>
       </div>
 
       {/* Stats */}
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="border-0 shadow-md">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total Users
@@ -96,12 +128,12 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{users.length}</div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground mt-1">
               {customerCount} customers, {providerCount} providers
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-0 shadow-md">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total Orders
@@ -112,7 +144,7 @@ export default function AdminDashboardPage() {
             <div className="text-2xl font-bold">{orders.length}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-0 shadow-md">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Restaurants
@@ -123,134 +155,104 @@ export default function AdminDashboardPage() {
             <div className="text-2xl font-bold">{providers.length}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-0 shadow-md bg-primary/5">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-sm font-medium text-primary">
               Total Revenue
             </CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
+            <div className="text-2xl font-bold text-primary">${totalRevenue.toFixed(2)}</div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card>
+      {/* Charts */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+        <Card className="col-span-2 shadow-sm border-0">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              User Management
-            </CardTitle>
-            <CardDescription>Manage users and their status</CardDescription>
+            <CardTitle>Revenue Over Time</CardTitle>
+            <CardDescription>Daily revenue from delivered orders</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button asChild className="w-full">
-              <Link href="/admin/users">Manage Users</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5" />
-              Orders
-            </CardTitle>
-            <CardDescription>View and track all orders</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link href="/admin/orders">View Orders</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Tag className="h-5 w-5" />
-              Categories
-            </CardTitle>
-            <CardDescription>Manage food categories ({categories.length})</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link href="/admin/categories">Manage Categories</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recent Activity */}
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        {/* Recent Users */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Users</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {users.slice(0, 5).map((user) => (
-                <div
-                  key={user.id}
-                  className="flex items-center justify-between rounded-lg border p-3"
-                >
-                  <div>
-                    <p className="font-medium">{user.name}</p>
-                    <p className="text-sm text-muted-foreground">{user.email}</p>
-                  </div>
-                  <div className="text-right">
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                      user.role === "ADMIN" ? "bg-purple-100 text-purple-700" :
-                      user.role === "PROVIDER" ? "bg-blue-100 text-blue-700" :
-                      "bg-gray-100 text-gray-700"
-                    }`}>
-                      {user.role}
-                    </span>
-                  </div>
-                </div>
-              ))}
+            <div className="h-[300px] w-full">
+              {revenueData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={revenueData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="date" axisLine={false} tickLine={false} tickMargin={10} />
+                    <YAxis axisLine={false} tickLine={false} tickFormatter={(val) => `$${val}`} />
+                    <RechartsTooltip formatter={(value) => [`$${value}`, "Revenue"]} />
+                    <Line type="monotone" dataKey="revenue" stroke="#2563eb" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex h-full items-center justify-center text-muted-foreground">Not enough data</div>
+              )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Recent Orders */}
-        <Card>
+        <Card className="shadow-sm border-0">
           <CardHeader>
-            <CardTitle>Recent Orders</CardTitle>
+            <CardTitle>User Roles</CardTitle>
+            <CardDescription>Platform demographic</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {orders.slice(0, 5).map((order) => (
-                <div
-                  key={order.id}
-                  className="flex items-center justify-between rounded-lg border p-3"
-                >
-                  <div>
-                    <p className="font-medium">
-                      #{order.id.slice(-8).toUpperCase()}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      ${order.totalPrice.toFixed(2)}
-                    </p>
-                  </div>
-                  <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                    order.status === "DELIVERED" ? "bg-green-100 text-green-700" :
-                    order.status === "CANCELLED" ? "bg-red-100 text-red-700" :
-                    order.status === "PREPARING" ? "bg-blue-100 text-blue-700" :
-                    "bg-yellow-100 text-yellow-700"
-                  }`}>
-                    {order.status}
-                  </span>
-                </div>
-              ))}
+            <div className="h-[300px] w-full">
+              {roleData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={roleData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {roleData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip />
+                    <Legend verticalAlign="bottom" height={36} />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex h-full items-center justify-center text-muted-foreground">Not enough data</div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-2 lg:col-span-3 shadow-sm border-0">
+          <CardHeader>
+            <CardTitle>Orders by Status</CardTitle>
+            <CardDescription>Current state of all orders</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px] w-full">
+              {statusData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={statusData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tickMargin={10} />
+                    <YAxis axisLine={false} tickLine={false} />
+                    <RechartsTooltip />
+                    <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} barSize={40} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex h-full items-center justify-center text-muted-foreground">Not enough data</div>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
+
     </div>
   );
 }

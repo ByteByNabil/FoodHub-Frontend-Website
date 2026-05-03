@@ -95,6 +95,12 @@ export default function EditMealPage({ params }: EditMealPageProps) {
     e.preventDefault();
     setIsLoading(true);
 
+    if (!formData.categoryId) {
+      toast.error("Please select a category");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       await api.updateMeal(id, {
         title: formData.title,
@@ -163,7 +169,7 @@ export default function EditMealPage({ params }: EditMealPageProps) {
               <div className="space-y-2">
                 <Label htmlFor="category">Category *</Label>
                 <Select
-                  value={formData.categoryId}
+                  value={formData.categoryId || undefined}
                   onValueChange={(value) =>
                     setFormData({ ...formData, categoryId: value })
                   }

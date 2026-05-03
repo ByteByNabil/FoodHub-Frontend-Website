@@ -247,26 +247,6 @@ export default function OrdersPage() {
     }
   };
 
-  if (!isAuthenticated || !isCustomer) {
-    return (
-      <div className="container mx-auto flex min-h-[calc(100vh-200px)] items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <CardTitle>Sign In Required</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-muted-foreground">
-              Please sign in as a customer to view your orders
-            </p>
-            <Button asChild>
-              <Link href="/login">Sign In</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   if (isLoading) {
     return (
       <div className="flex h-96 items-center justify-center">
@@ -276,7 +256,7 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div>
       <div className="mb-8">
         <h1 className="mb-2 text-3xl font-bold">My Orders</h1>
         <p className="text-muted-foreground">
