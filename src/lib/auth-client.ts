@@ -1,9 +1,15 @@
 import { createAuthClient } from "better-auth/react";
 import { inferAdditionalFields } from "better-auth/client/plugins";
-import { API_BASE_URL } from "./api-url";
+
+// Auth MUST always talk directly to the backend URL — never through the Next.js proxy.
+// Using the proxy causes state_mismatch because the state cookie is set on the backend
+// domain during sign-in initiation, but the proxy forwards the callback without that cookie.
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  "https://food-hub-backend-server.vercel.app";
 
 export const authClient = createAuthClient({
-  ...(API_BASE_URL ? { baseURL: API_BASE_URL } : {}),
+  baseURL: BACKEND_URL,
   plugins: [
     inferAdditionalFields({
       user: {

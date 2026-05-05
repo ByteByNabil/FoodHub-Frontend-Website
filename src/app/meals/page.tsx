@@ -146,9 +146,89 @@ function MealsContent() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary/5 via-background to-accent/5 py-16 lg:py-24">
+      <section className="relative bg-gradient-to-br from-primary/5 via-background to-accent/5 py-16 lg:py-28 overflow-hidden">
         <div className="absolute top-10 right-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute bottom-10 left-20 h-48 w-48 rounded-full bg-accent/10 blur-3xl" />
+
+        {/* ── Right floating images ── */}
+        <div className="absolute top-8 right-[8%] hidden lg:block">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="animate-float"
+          >
+            <div className="h-28 w-28 rounded-2xl overflow-hidden shadow-2xl rotate-6 ring-4 ring-background">
+              <img src="https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=200&h=200&fit=crop" alt="Indian Curry" className="h-full w-full object-cover" />
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="absolute top-1/2 -translate-y-1/2 right-[3%] hidden lg:block">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+            className="animate-float-delayed"
+          >
+            <div className="h-20 w-20 rounded-2xl overflow-hidden shadow-xl -rotate-8 ring-4 ring-background">
+              <img src="https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=200&h=200&fit=crop" alt="Ramen" className="h-full w-full object-cover" />
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="absolute bottom-8 right-[14%] hidden lg:block">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.7, duration: 0.6 }}
+            className="animate-float"
+          >
+            <div className="h-24 w-24 rounded-2xl overflow-hidden shadow-2xl -rotate-12 ring-4 ring-background">
+              <img src="https://images.unsplash.com/photo-1544025162-d76694265947?w=200&h=200&fit=crop" alt="Steak" className="h-full w-full object-cover" />
+            </div>
+          </motion.div>
+        </div>
+
+        {/* ── Left floating images ── */}
+        <div className="absolute top-8 left-[8%] hidden lg:block">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="animate-float-delayed"
+          >
+            <div className="h-28 w-28 rounded-2xl overflow-hidden shadow-2xl -rotate-6 ring-4 ring-background">
+              <img src="https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=200&h=200&fit=crop" alt="Pasta" className="h-full w-full object-cover" />
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="absolute top-1/2 -translate-y-1/2 left-[3%] hidden lg:block">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
+            className="animate-float"
+          >
+            <div className="h-20 w-20 rounded-2xl overflow-hidden shadow-xl rotate-8 ring-4 ring-background">
+              <img src="https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=200&h=200&fit=crop" alt="BBQ Ribs" className="h-full w-full object-cover" />
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="absolute bottom-8 left-[14%] hidden lg:block">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.8, duration: 0.6 }}
+            className="animate-float-delayed"
+          >
+            <div className="h-24 w-24 rounded-2xl overflow-hidden shadow-xl rotate-12 ring-4 ring-background">
+              <img src="https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=200&h=200&fit=crop" alt="Rice Bowl" className="h-full w-full object-cover" />
+            </div>
+          </motion.div>
+        </div>
 
         <div className="container mx-auto px-4 relative z-10">
           <motion.div

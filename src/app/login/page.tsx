@@ -84,11 +84,28 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      await signIn.social({
-        provider: "google",
-        callbackURL: "/",
+      const backendUrl =
+        process.env.NEXT_PUBLIC_BACKEND_URL ||
+        "https://food-hub-backend-server.vercel.app";
+      const callbackURL = `${window.location.origin}/`;
+
+      // credentials:include stores the state cookie on the backend domain.
+      // disableRedirect:true gets the Google URL as JSON (no auto-redirect).
+      const res = await fetch(`${backendUrl}/api/auth/sign-in/social`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ provider: "google", callbackURL, disableRedirect: true }),
       });
+
+      const data = await res.json();
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No OAuth URL returned from backend");
+      }
     } catch (error) {
+      console.error("Google login error:", error);
       toast.error("Failed to sign in with Google");
       setIsLoading(false);
     }

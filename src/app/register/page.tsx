@@ -87,6 +87,7 @@ export default function RegisterPage() {
       toast.success(
         "Account created! Please check your email to verify your account."
       );
+      setIsLoading(false);
       router.push("/login");
     } catch {
       toast.error("An error occurred during registration");
@@ -97,11 +98,26 @@ export default function RegisterPage() {
   const handleGoogleSignup = async () => {
     setIsLoading(true);
     try {
-      await signIn.social({
-        provider: "google",
-        callbackURL: "/",
+      const backendUrl =
+        process.env.NEXT_PUBLIC_BACKEND_URL ||
+        "https://food-hub-backend-server.vercel.app";
+      const callbackURL = `${window.location.origin}/`;
+
+      const res = await fetch(`${backendUrl}/api/auth/sign-in/social`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ provider: "google", callbackURL, disableRedirect: true }),
       });
+
+      const data = await res.json();
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No OAuth URL returned from backend");
+      }
     } catch (error) {
+      console.error("Google signup error:", error);
       toast.error("Failed to continue with Google");
       setIsLoading(false);
     }

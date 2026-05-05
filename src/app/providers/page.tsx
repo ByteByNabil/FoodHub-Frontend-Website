@@ -55,9 +55,95 @@ export default function ProvidersPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary/5 via-background to-accent/5 py-20">
+      <section className="relative bg-gradient-to-br from-primary/5 via-background to-accent/5 py-20 lg:py-28 overflow-hidden">
         <div className="absolute top-10 right-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute bottom-10 left-20 h-48 w-48 rounded-full bg-accent/10 blur-3xl" />
+
+        {/* ── Right floating restaurant images ── */}
+        <div className="absolute top-8 right-[8%] hidden lg:block">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="animate-float"
+          >
+            <div className="h-28 w-28 rounded-2xl overflow-hidden shadow-2xl rotate-6 ring-4 ring-background">
+              {/* Cozy restaurant interior */}
+              <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=200&h=200&fit=crop" alt="Restaurant Interior" className="h-full w-full object-cover" />
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="absolute top-1/2 -translate-y-1/2 right-[3%] hidden lg:block">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+            className="animate-float-delayed"
+          >
+            <div className="h-20 w-20 rounded-2xl overflow-hidden shadow-xl -rotate-6 ring-4 ring-background">
+              {/* Chef cooking */}
+              <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&h=200&fit=crop" alt="Chef Cooking" className="h-full w-full object-cover" />
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="absolute bottom-8 right-[14%] hidden lg:block">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.7, duration: 0.6 }}
+            className="animate-float"
+          >
+            <div className="h-24 w-24 rounded-2xl overflow-hidden shadow-2xl -rotate-12 ring-4 ring-background">
+              {/* Fine dining table */}
+              <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=200&h=200&fit=crop" alt="Fine Dining" className="h-full w-full object-cover" />
+            </div>
+          </motion.div>
+        </div>
+
+        {/* ── Left floating restaurant images ── */}
+        <div className="absolute top-8 left-[8%] hidden lg:block">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="animate-float-delayed"
+          >
+            <div className="h-28 w-28 rounded-2xl overflow-hidden shadow-2xl -rotate-6 ring-4 ring-background">
+              {/* Outdoor patio dining */}
+              <img src="https://images.unsplash.com/photo-1559339352-11d035aa65de?w=200&h=200&fit=crop" alt="Outdoor Patio" className="h-full w-full object-cover" />
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="absolute top-1/2 -translate-y-1/2 left-[3%] hidden lg:block">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
+            className="animate-float"
+          >
+            <div className="h-20 w-20 rounded-2xl overflow-hidden shadow-xl rotate-6 ring-4 ring-background">
+              {/* Kitchen team */}
+              <img src="https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?w=200&h=200&fit=crop" alt="Kitchen Team" className="h-full w-full object-cover" />
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="absolute bottom-8 left-[14%] hidden lg:block">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.8, duration: 0.6 }}
+            className="animate-float-delayed"
+          >
+            <div className="h-24 w-24 rounded-2xl overflow-hidden shadow-xl rotate-12 ring-4 ring-background">
+              {/* Cafe ambiance */}
+              <img src="https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=200&h=200&fit=crop" alt="Cafe Ambiance" className="h-full w-full object-cover" />
+            </div>
+          </motion.div>
+        </div>
 
         <div className="container mx-auto px-4 relative z-10">
           <motion.div

@@ -213,27 +213,82 @@ export default function HomePage() {
         <div className="absolute top-20 right-10 h-72 w-72 rounded-full bg-primary/10 blur-3xl animate-pulse-soft" />
         <div className="absolute bottom-20 left-10 h-96 w-96 rounded-full bg-accent/10 blur-3xl animate-pulse-soft" />
 
-        <div className="absolute top-32 right-[15%] hidden lg:block">
+        {/* ── Right-side floating images ── */}
+        <div className="absolute top-28 right-[12%] hidden lg:block">
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
+            initial={{ opacity: 0, scale: 0.8, rotate: 6 }}
+            animate={{ opacity: 1, scale: 1, rotate: 6 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
             className="animate-float"
           >
-            <div className="h-32 w-32 rounded-2xl overflow-hidden shadow-2xl rotate-6">
+            <div className="h-32 w-32 rounded-2xl overflow-hidden shadow-2xl ring-4 ring-background">
               <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=200&h=200&fit=crop" alt="Pizza" className="h-full w-full object-cover" />
             </div>
           </motion.div>
         </div>
-        <div className="absolute bottom-40 right-[25%] hidden lg:block">
+
+        <div className="absolute top-56 right-[4%] hidden lg:block">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
+            className="animate-float-delayed"
+          >
+            <div className="h-24 w-24 rounded-2xl overflow-hidden shadow-xl -rotate-6 ring-4 ring-background">
+              <img src="https://images.unsplash.com/photo-1551024601-bec78aea704b?w=200&h=200&fit=crop" alt="Dessert" className="h-full w-full object-cover" />
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="absolute bottom-36 right-[20%] hidden lg:block">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.8, duration: 0.6 }}
+            className="animate-float"
+          >
+            <div className="h-28 w-28 rounded-2xl overflow-hidden shadow-2xl -rotate-12 ring-4 ring-background">
+              <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&h=200&fit=crop" alt="Burger" className="h-full w-full object-cover" />
+            </div>
+          </motion.div>
+        </div>
+
+        {/* ── Left-side floating images ── */}
+        <div className="absolute top-32 left-[8%] hidden lg:block">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+            className="animate-float-delayed"
+          >
+            <div className="h-28 w-28 rounded-2xl overflow-hidden shadow-2xl rotate-12 ring-4 ring-background">
+              <img src="https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=200&h=200&fit=crop" alt="Sushi" className="h-full w-full object-cover" />
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="absolute top-60 left-[2%] hidden lg:block">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.7, duration: 0.6 }}
+            className="animate-float"
+          >
+            <div className="h-20 w-20 rounded-2xl overflow-hidden shadow-xl -rotate-6 ring-4 ring-background">
+              <img src="https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=200&h=200&fit=crop" alt="Tacos" className="h-full w-full object-cover" />
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="absolute bottom-32 left-[12%] hidden lg:block">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.9, duration: 0.6 }}
             className="animate-float-delayed"
           >
-            <div className="h-24 w-24 rounded-2xl overflow-hidden shadow-2xl -rotate-12">
-              <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&h=200&fit=crop" alt="Burger" className="h-full w-full object-cover" />
+            <div className="h-24 w-24 rounded-2xl overflow-hidden shadow-xl rotate-6 ring-4 ring-background">
+              <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=200&h=200&fit=crop" alt="Salad" className="h-full w-full object-cover" />
             </div>
           </motion.div>
         </div>
@@ -528,8 +583,13 @@ export default function HomePage() {
       </section>
 
       {/* 7. Become a Partner */}
-      <section className="py-24 bg-primary text-primary-foreground relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1600&h=600&fit=crop')] opacity-10 mix-blend-overlay" />
+      <section className="py-24 relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-zinc-900">
+        {/* subtle texture */}
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1600&h=600&fit=crop')] opacity-[0.07] mix-blend-luminosity" />
+        {/* Soft glow blobs */}
+        <div className="absolute -top-20 -left-20 h-72 w-72 rounded-full bg-primary/25 blur-3xl" />
+        <div className="absolute -bottom-20 -right-20 h-72 w-72 rounded-full bg-accent/20 blur-3xl" />
+
         <div className="container mx-auto px-4 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div
@@ -537,31 +597,41 @@ export default function HomePage() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-4xl font-extrabold mb-6 md:text-5xl">Grow your business with FoodHub</h2>
-              <p className="text-primary-foreground/90 text-lg mb-8 leading-relaxed max-w-lg">
+              <span className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/20 px-4 py-1.5 text-sm font-medium text-white/80 mb-6 backdrop-blur-sm">
+                🤝 Partner with us
+              </span>
+              <h2 className="text-4xl font-extrabold mb-6 md:text-5xl text-white leading-tight">
+                Grow your business<br className="hidden sm:block" /> with FoodHub
+              </h2>
+              <p className="text-white/70 text-lg mb-8 leading-relaxed max-w-lg">
                 Partner with us to reach more customers, increase your revenue, and manage deliveries effortlessly. Join our network of successful restaurants today.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" variant="secondary" className="shadow-xl" asChild>
+                <Button size="lg"
+                  className="bg-white text-slate-900 hover:bg-white/90 shadow-xl font-semibold"
+                  asChild>
                   <Link href="/register"><Store className="mr-2 h-5 w-5" /> Register Restaurant</Link>
                 </Button>
-                <Button size="lg" variant="outline" className="border-primary-foreground/30 hover:bg-primary-foreground/10" asChild>
+                <Button size="lg" variant="outline"
+                  className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm"
+                  asChild>
                   <Link href="/register"><Bike className="mr-2 h-5 w-5" /> Become a Rider</Link>
                 </Button>
               </div>
             </motion.div>
+
             <motion.div className="hidden lg:grid grid-cols-2 gap-6"
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
             >
-              <div className="bg-background/10 backdrop-blur-md border border-white/20 p-8 rounded-3xl text-center">
-                <div className="text-4xl font-bold mb-2">30%</div>
-                <div className="text-sm font-medium uppercase tracking-wider text-primary-foreground/80">Average Revenue Increase</div>
+              <div className="bg-white/8 backdrop-blur-md border border-white/15 p-8 rounded-3xl text-center shadow-xl">
+                <div className="text-4xl font-bold mb-2 text-white">30%</div>
+                <div className="text-sm font-medium uppercase tracking-wider text-white/60">Average Revenue Increase</div>
               </div>
-              <div className="bg-background/10 backdrop-blur-md border border-white/20 p-8 rounded-3xl text-center translate-y-8">
-                <div className="text-4xl font-bold mb-2">5M+</div>
-                <div className="text-sm font-medium uppercase tracking-wider text-primary-foreground/80">Active App Users</div>
+              <div className="bg-white/8 backdrop-blur-md border border-white/15 p-8 rounded-3xl text-center translate-y-8 shadow-xl">
+                <div className="text-4xl font-bold mb-2 text-white">5M+</div>
+                <div className="text-sm font-medium uppercase tracking-wider text-white/60">Active App Users</div>
               </div>
             </motion.div>
           </div>

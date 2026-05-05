@@ -15,6 +15,52 @@ interface MealCardProps {
   meal: Meal;
 }
 
+/** Map category keywords → relevant Unsplash food photo */
+const CATEGORY_IMAGES: Record<string, string> = {
+  pizza:      "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=300&fit=crop",
+  burger:     "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop",
+  burgers:    "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop",
+  sushi:      "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=400&h=300&fit=crop",
+  pasta:      "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=400&h=300&fit=crop",
+  salad:      "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop",
+  salads:     "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop",
+  dessert:    "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=400&h=300&fit=crop",
+  desserts:   "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=400&h=300&fit=crop",
+  taco:       "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=400&h=300&fit=crop",
+  tacos:      "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=400&h=300&fit=crop",
+  indian:     "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400&h=300&fit=crop",
+  chinese:    "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400&h=300&fit=crop",
+  bbq:        "https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=400&h=300&fit=crop",
+  sandwich:   "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=400&h=300&fit=crop",
+  sandwiches: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=400&h=300&fit=crop",
+  vegan:      "https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?w=400&h=300&fit=crop",
+  vegetarian: "https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?w=400&h=300&fit=crop",
+  chicken:    "https://images.unsplash.com/photo-1598103442097-8b74394b95c3?w=400&h=300&fit=crop",
+  seafood:    "https://images.unsplash.com/photo-1615361200141-f45040f367be?w=400&h=300&fit=crop",
+  steak:      "https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=300&fit=crop",
+  noodles:    "https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=400&h=300&fit=crop",
+  soup:       "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&h=300&fit=crop",
+  rice:       "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&h=300&fit=crop",
+  breakfast:  "https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=400&h=300&fit=crop",
+  drinks:     "https://images.unsplash.com/photo-1544145945-f90425340c7e?w=400&h=300&fit=crop",
+  juice:      "https://images.unsplash.com/photo-1544145945-f90425340c7e?w=400&h=300&fit=crop",
+  coffee:     "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&h=300&fit=crop",
+};
+
+const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop";
+
+function getFallbackImage(categoryName?: string): string {
+  if (!categoryName) return DEFAULT_IMAGE;
+  const key = categoryName.toLowerCase().trim();
+  // Direct match
+  if (CATEGORY_IMAGES[key]) return CATEGORY_IMAGES[key];
+  // Partial match (e.g. "Fresh Salads" → "salad")
+  for (const [keyword, url] of Object.entries(CATEGORY_IMAGES)) {
+    if (key.includes(keyword)) return url;
+  }
+  return DEFAULT_IMAGE;
+}
+
 export function MealCard({ meal }: MealCardProps) {
   const { addToCart, providerId } = useCart();
   const { isAuthenticated, isCustomer } = useAuth();
@@ -50,12 +96,12 @@ export function MealCard({ meal }: MealCardProps) {
         <Card className="group h-full flex flex-col overflow-hidden border-0 shadow-md hover:shadow-xl transition-shadow duration-300 rounded-2xl">
           <div className="relative aspect-[4/3] overflow-hidden bg-muted">
             <img
-              src={
-                meal.image ||
-                "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop"
-              }
+              src={meal.image || getFallbackImage(meal.category?.name)}
               alt={meal.title}
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = getFallbackImage(meal.category?.name);
+              }}
             />
 
             {/* Overlay gradient */}
