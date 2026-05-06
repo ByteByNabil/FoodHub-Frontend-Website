@@ -60,7 +60,7 @@ export default function ProvidersPage() {
         <div className="absolute bottom-10 left-20 h-48 w-48 rounded-full bg-accent/10 blur-3xl" />
 
         {/* ── Right floating restaurant images ── */}
-        <div className="absolute top-8 right-[8%] hidden lg:block">
+        <div className="absolute top-8 right-[8%] opacity-20 sm:opacity-50 lg:opacity-100 scale-50 sm:scale-75 lg:scale-100 pointer-events-none">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -74,7 +74,7 @@ export default function ProvidersPage() {
           </motion.div>
         </div>
 
-        <div className="absolute top-1/2 -translate-y-1/2 right-[3%] hidden lg:block">
+        <div className="absolute top-1/2 -translate-y-1/2 right-[3%] opacity-20 sm:opacity-50 lg:opacity-100 scale-50 sm:scale-75 lg:scale-100 pointer-events-none">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -88,7 +88,7 @@ export default function ProvidersPage() {
           </motion.div>
         </div>
 
-        <div className="absolute bottom-8 right-[14%] hidden lg:block">
+        <div className="absolute bottom-8 right-[14%] opacity-20 sm:opacity-50 lg:opacity-100 scale-50 sm:scale-75 lg:scale-100 pointer-events-none">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -103,7 +103,7 @@ export default function ProvidersPage() {
         </div>
 
         {/* ── Left floating restaurant images ── */}
-        <div className="absolute top-8 left-[8%] hidden lg:block">
+        <div className="absolute top-8 left-[8%] opacity-20 sm:opacity-50 lg:opacity-100 scale-50 sm:scale-75 lg:scale-100 pointer-events-none">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -117,7 +117,7 @@ export default function ProvidersPage() {
           </motion.div>
         </div>
 
-        <div className="absolute top-1/2 -translate-y-1/2 left-[3%] hidden lg:block">
+        <div className="absolute top-1/2 -translate-y-1/2 left-[3%] opacity-20 sm:opacity-50 lg:opacity-100 scale-50 sm:scale-75 lg:scale-100 pointer-events-none">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -131,7 +131,7 @@ export default function ProvidersPage() {
           </motion.div>
         </div>
 
-        <div className="absolute bottom-8 left-[14%] hidden lg:block">
+        <div className="absolute bottom-8 left-[14%] opacity-20 sm:opacity-50 lg:opacity-100 scale-50 sm:scale-75 lg:scale-100 pointer-events-none">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}

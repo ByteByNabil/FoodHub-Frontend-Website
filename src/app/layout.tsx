@@ -8,6 +8,8 @@ import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AiAssistant } from "@/components/ai-assistant";
+import { SmoothScrolling } from "@/components/smooth-scrolling";
+import { ScrollToTop } from "@/components/scroll-to-top";
 import "./globals.css";
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -29,17 +31,20 @@ export default function RootLayout({
     <html lang="en" className="bg-background" suppressHydrationWarning>
       <body className="font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <AuthProvider>
-            <CartProvider>
-              <div className="flex min-h-screen flex-col">
-                <Navbar />
-                <main className="flex-1">{children}</main>
-                <Footer />
-              </div>
-              <AiAssistant />
-              <Toaster position="top-right" richColors />
-            </CartProvider>
-          </AuthProvider>
+          <SmoothScrolling>
+            <AuthProvider>
+              <CartProvider>
+                <div className="flex min-h-screen flex-col">
+                  <Navbar />
+                  <main className="flex-1">{children}</main>
+                  <Footer />
+                </div>
+                <AiAssistant />
+                <ScrollToTop />
+                <Toaster position="top-right" richColors />
+              </CartProvider>
+            </AuthProvider>
+          </SmoothScrolling>
         </ThemeProvider>
         {process.env.NODE_ENV === "production" && <Analytics />}
       </body>

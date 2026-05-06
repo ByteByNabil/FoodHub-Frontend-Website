@@ -170,6 +170,7 @@ export function AiAssistant() {
       <AnimatePresence>
         {!isOpen && (
           <motion.div
+            key="fab"
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
@@ -193,39 +194,40 @@ export function AiAssistant() {
       {/* ── Chat panel ── */}
       <AnimatePresence>
         {isOpen && (
-          <>
-            {/* Mobile backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm sm:hidden"
-              onClick={() => setIsOpen(false)}
-            />
-
-            <motion.div
-              initial={{ opacity: 0, y: 24, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 24, scale: 0.97 }}
-              transition={{ duration: 0.22, ease: "easeOut" }}
-              className={[
-                // Mobile: floating card
-                "fixed z-50 flex flex-col",
-                "inset-x-4 bottom-4 rounded-2xl",
-                "h-[75dvh]",
-                // sm+: floating card bottom-right
-                "sm:inset-auto sm:bottom-6 sm:right-6",
-                "sm:h-[580px] sm:w-[380px]",
-                "sm:rounded-2xl",
-                // md+: a bit wider
-                "md:w-[420px]",
-                // Styling
-                "bg-background/95 backdrop-blur-xl",
-                "shadow-2xl shadow-black/20",
-                "border border-border/50",
-                "overflow-hidden",
-              ].join(" ")}
-            >
+          <motion.div
+            key="backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm sm:hidden"
+            onClick={() => setIsOpen(false)}
+          />
+        )}
+        {isOpen && (
+          <motion.div
+            key="chat-panel"
+            initial={{ opacity: 0, y: 24, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 24, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 300, damping: 24 }}
+            className={[
+              // Mobile: floating card
+              "fixed z-50 flex flex-col",
+              "inset-x-4 bottom-4 rounded-2xl",
+              "h-[75dvh]",
+              // sm+: floating card bottom-right
+              "sm:inset-auto sm:bottom-6 sm:right-6",
+              "sm:h-[580px] sm:w-[380px]",
+              "sm:rounded-2xl",
+              // md+: a bit wider
+              "md:w-[420px]",
+              // Styling
+              "bg-background/95 backdrop-blur-xl",
+              "shadow-2xl shadow-black/20",
+              "border border-border/50",
+              "overflow-hidden",
+            ].join(" ")}
+          >
               {/* ── Header ── */}
               <div className="bg-gradient-to-r from-primary to-accent px-4 py-3.5 sm:px-5 sm:py-4 shrink-0">
                 <div className="flex items-center justify-between">
@@ -280,9 +282,9 @@ export function AiAssistant() {
                     {messages.map((msg, idx) => (
                       <motion.div
                         key={idx}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.18 }}
+                        initial={{ opacity: 0, y: 12, scale: 0.96 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
                         className={`flex items-end gap-2 ${
                           msg.role === "user" ? "flex-row-reverse" : "flex-row"
                         }`}
@@ -332,8 +334,9 @@ export function AiAssistant() {
                   {/* Typing indicator */}
                   {isLoading && (
                     <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0, y: 12, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
                       className="flex items-end gap-2"
                     >
                       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted border border-border shadow-sm">
@@ -402,7 +405,6 @@ export function AiAssistant() {
                 </p>
               </div>
             </motion.div>
-          </>
         )}
       </AnimatePresence>
     </>

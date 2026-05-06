@@ -214,7 +214,7 @@ export default function HomePage() {
         <div className="absolute bottom-20 left-10 h-96 w-96 rounded-full bg-accent/10 blur-3xl animate-pulse-soft" />
 
         {/* ── Right-side floating images ── */}
-        <div className="absolute top-28 right-[12%] hidden lg:block">
+        <div className="absolute top-28 right-[12%] opacity-20 sm:opacity-50 lg:opacity-100 scale-50 sm:scale-75 lg:scale-100 pointer-events-none">
           <motion.div
             initial={{ opacity: 0, scale: 0.8, rotate: 6 }}
             animate={{ opacity: 1, scale: 1, rotate: 6 }}
@@ -227,7 +227,7 @@ export default function HomePage() {
           </motion.div>
         </div>
 
-        <div className="absolute top-56 right-[4%] hidden lg:block">
+        <div className="absolute top-56 right-[4%] opacity-20 sm:opacity-50 lg:opacity-100 scale-50 sm:scale-75 lg:scale-100 pointer-events-none">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -240,7 +240,7 @@ export default function HomePage() {
           </motion.div>
         </div>
 
-        <div className="absolute bottom-36 right-[20%] hidden lg:block">
+        <div className="absolute bottom-36 right-[20%] opacity-20 sm:opacity-50 lg:opacity-100 scale-50 sm:scale-75 lg:scale-100 pointer-events-none">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -254,7 +254,7 @@ export default function HomePage() {
         </div>
 
         {/* ── Left-side floating images ── */}
-        <div className="absolute top-32 left-[8%] hidden lg:block">
+        <div className="absolute top-32 left-[8%] opacity-20 sm:opacity-50 lg:opacity-100 scale-50 sm:scale-75 lg:scale-100 pointer-events-none">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -267,7 +267,7 @@ export default function HomePage() {
           </motion.div>
         </div>
 
-        <div className="absolute top-60 left-[2%] hidden lg:block">
+        <div className="absolute top-60 left-[2%] opacity-20 sm:opacity-50 lg:opacity-100 scale-50 sm:scale-75 lg:scale-100 pointer-events-none">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -280,7 +280,7 @@ export default function HomePage() {
           </motion.div>
         </div>
 
-        <div className="absolute bottom-32 left-[12%] hidden lg:block">
+        <div className="absolute bottom-32 left-[12%] opacity-20 sm:opacity-50 lg:opacity-100 scale-50 sm:scale-75 lg:scale-100 pointer-events-none">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
