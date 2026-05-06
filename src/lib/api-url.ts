@@ -3,13 +3,10 @@ function normalizeUrl(url: string) {
 }
 
 export function getApiBaseUrl() {
-  // In production (Vercel), we MUST use the proxy (/api/...) 
-  // to avoid cross-domain cookie blocking issues.
-  if (process.env.NODE_ENV === "production") {
-    return "";
-  }
-
-  const configuredUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+  const configuredUrl = 
+    process.env.NEXT_PUBLIC_BACKEND_URL || 
+    process.env.NEXT_PUBLIC_API_URL || 
+    "https://food-hub-backend-server.vercel.app";
 
   if (configuredUrl) {
     return normalizeUrl(configuredUrl);

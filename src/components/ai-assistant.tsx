@@ -209,10 +209,10 @@ export function AiAssistant() {
               exit={{ opacity: 0, y: 24, scale: 0.97 }}
               transition={{ duration: 0.22, ease: "easeOut" }}
               className={[
-                // Mobile: full-screen sheet from bottom
+                // Mobile: floating card
                 "fixed z-50 flex flex-col",
-                "inset-x-0 bottom-0 rounded-t-3xl",
-                "h-[90dvh]",
+                "inset-x-4 bottom-4 rounded-2xl",
+                "h-[75dvh]",
                 // sm+: floating card bottom-right
                 "sm:inset-auto sm:bottom-6 sm:right-6",
                 "sm:h-[580px] sm:w-[380px]",
